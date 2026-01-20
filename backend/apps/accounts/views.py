@@ -4,6 +4,10 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login
 
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import default_token_generator
+
 from .models import User
 from .serializers import (
     UserRegistrationSerializer,
@@ -23,15 +27,37 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-
-        refresh = RefreshToken.for_user(user)
-
         return Response({
-            'user': UserProfileSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'message': 'User regirstered successfully'
+            'message': 'На вашу почту отправлено письмо для подтверждения.'
         }, status=status.HTTP_201_CREATED)
+
+class ActivateView(generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'message': 'Аккаунт успешно активирован!',
+                'user': UserProfileSerializer(user).data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'error': 'Ссылка активации недействительна или устарела.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
 
 class LoginView(generics.GenericAPIView):

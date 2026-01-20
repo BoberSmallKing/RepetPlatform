@@ -168,3 +168,8 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+FRONTEND_URL = "http://127.0.0.1:8000"
+
+DEFAULT_CHARSET = 'utf-8'

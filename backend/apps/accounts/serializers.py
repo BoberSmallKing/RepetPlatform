@@ -4,6 +4,13 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 
+from django.conf import settings
+from django.urls import reverse
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор для регистрации пользователя"""
     password = serializers.CharField(
@@ -28,7 +35,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password_confirm')
-        user = User.objects.create_user(**validated_data)
+        # Создаем неактивного пользователя
+        user = User.objects.create_user(**validated_data, is_active=False)
+        
+        # Генерация токенов
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        
+        # Автоматическое формирование пути на основе имени в urls.py
+        activation_path = reverse('activate', kwargs={'uidb64': uid, 'token': token})
+        
+        # Склеиваем домен из настроек и путь
+        activation_url = f"{settings.FRONTEND_URL}{activation_path}"
+        
+        # Отправка письма (текст теперь будет понятным в консоли)
+        send_mail(
+            subject="Activate account",
+            message=f"Hello, {user.first_name}!\nEmail confirm:\n{activation_url}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
         return user
     
 

@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import User
-
 
 from django.conf import settings
 from django.urls import reverse
@@ -11,10 +9,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
+from .models import User, TutorProfile, StudentProfile
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации пользователя"""
+    """
+    Регистрация пользователя с выбором роли.
+    """
     password = serializers.CharField(
-        write_only=True, 
+        write_only=True,
         validators=[validate_password]
     )
     password_confirm = serializers.CharField(write_only=True)
@@ -22,45 +24,70 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'password', 'password_confirm',
-            'first_name', 'last_name'
+            'email',
+            'password',
+            'password_confirm',
+            'first_name',
+            'last_name',
+            'role',
         )
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError(
-                {"password": "Password fields didnt match."}
+                {"password": "Passwords do not match."}
             )
         return attrs
-    
+
     def create(self, validated_data):
         validated_data.pop('password_confirm')
-        # Создаем неактивного пользователя
-        user = User.objects.create_user(**validated_data, is_active=False)
-        
-        # Генерация токенов
+
+        # Создание пользователя
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            role=validated_data['role'],
+            is_active=False
+        )
+
+        # Создание профиля в зависимости от роли
+        if user.role == User.Role.TUTOR:
+            TutorProfile.objects.create(user=user)
+        elif user.role == User.Role.STUDENT:
+            StudentProfile.objects.create(user=user)
+
+        # Email-активация
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        
-        # Автоматическое формирование пути на основе имени в urls.py
-        activation_path = reverse('activate', kwargs={'uidb64': uid, 'token': token})
-        
-        # Склеиваем домен из настроек и путь
+
+        activation_path = reverse(
+            'activate',
+            kwargs={'uidb64': uid, 'token': token}
+        )
+
         activation_url = f"{settings.FRONTEND_URL}{activation_path}"
-        
-        # Отправка письма (текст теперь будет понятным в консоли)
+
         send_mail(
             subject="Activate account",
-            message=f"Hello, {user.first_name}!\nEmail confirm:\n{activation_url}",
+            message=(
+                f"Hello, {user.first_name}!\n\n"
+                f"Please confirm your email:\n{activation_url}"
+            ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=False,
         )
+
         return user
+
     
 
 class UserLoginSerializer(serializers.Serializer):
-    """Сериализатор для входа пользователя"""
+    """
+    Вход по email и паролю.
+    """
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
@@ -68,76 +95,137 @@ class UserLoginSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
 
-        if email and password:
-            user = authenticate(
-                request=self.context.get('request'),
-                username=email,
-                password=password
-            )
-            if not user:
-                raise serializers.ValidationError(
-                    'User not found.'
-                )
-            if not user.is_active:
-                raise serializers.ValidationError(
-                    'User account is disabled.'
-                )
-            attrs['user'] = user
-            return attrs
-        else:
-            raise serializers.ValidationError(
-                'Must include "email" and "password".'
-            )
+        user = authenticate(
+            request=self.context.get('request'),
+            username=email,
+            password=password
+        )
 
+        if not user:
+            raise serializers.ValidationError('Invalid credentials.')
+
+        if not user.is_active:
+            raise serializers.ValidationError('Account is not activated.')
+
+        attrs['user'] = user
+        return attrs
+
+class TutorProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TutorProfile
+        fields = ('education', 'experience_years', 'price_per_hour')
+
+
+class StudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = ('grade', 'school', 'goals')
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор для профиля пользователя"""
     full_name = serializers.ReadOnlyField()
+    tutor_profile = TutorProfileSerializer(read_only=True)
+    student_profile = StudentProfileSerializer(read_only=True)
+
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'first_name', 'last_name',
-            'full_name', 'avatar', 'bio', 'created_at', 'updated_at',
+            'id',
+            'email',
+            'role',
+            'first_name',
+            'last_name',
+            'full_name',
+            'avatar',
+            'bio',
+            'created_at',
+            'updated_at',
+            'tutor_profile',
+            'student_profile',
         )
-        read_only_fields = ('id', 'created_at', 'updated_at')
+        read_only_fields = (
+            'id',
+            'email',
+            'role',
+            'created_at',
+            'updated_at',
+            'tutor_profile',
+            'student_profile',
+        )
+
+    def to_representation(self, instance):
+        """Показываем только профиль по роли"""
+        data = super().to_representation(instance)
+        if instance.role == User.Role.TUTOR:
+            data['student_profile'] = None
+        elif instance.role == User.Role.STUDENT:
+            data['tutor_profile'] = None
+        return data
+
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    """Сериализатор для обновления профиля пользователя"""
-    
+    # Nested поля профиля
+    tutor_profile = serializers.DictField(write_only=True, required=False)
+    student_profile = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'avatar', 'bio'
+            'first_name',
+            'last_name',
+            'avatar',
+            'bio',
+            'tutor_profile',
+            'student_profile',
         )
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        for attr in ('first_name', 'last_name', 'avatar', 'bio'):
+            if attr in validated_data:
+                setattr(instance, attr, validated_data[attr])
         instance.save()
+
+        if instance.role == User.Role.TUTOR and 'tutor_profile' in validated_data:
+            tutor_data = validated_data.pop('tutor_profile')
+            tutor_profile = getattr(instance, 'tutor_profile', None)
+            if tutor_profile:
+                for key, value in tutor_data.items():
+                    setattr(tutor_profile, key, value)
+                tutor_profile.save()
+
+        elif instance.role == User.Role.STUDENT and 'student_profile' in validated_data:
+            student_data = validated_data.pop('student_profile')
+            student_profile = getattr(instance, 'student_profile', None)
+            if student_profile:
+                for key, value in student_data.items():
+                    setattr(student_profile, key, value)
+                student_profile.save()
+
         return instance
+
     
 
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
+    old_password = serializers.CharField()
     new_password = serializers.CharField(
-        required=True,
         validators=[validate_password]
     )
-    new_password_confirm = serializers.CharField(required=True)
+    new_password_confirm = serializers.CharField()
 
     def validate_old_password(self, value):
         user = self.context['request'].user
         if not user.check_password(value):
-            raise serializers.ValidationError('Old password is incorrect.')
+            raise serializers.ValidationError(
+                'Old password is incorrect.'
+            )
         return value
-    
+
     def validate(self, attrs):
         if attrs['new_password'] != attrs['new_password_confirm']:
             raise serializers.ValidationError(
-                {'new_password': 'Pasword fields didnt match.'}
+                {'new_password': 'Passwords do not match.'}
             )
         return attrs
-    
+
     def save(self):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])

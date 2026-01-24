@@ -24,11 +24,13 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
 ]
 
 LOCAL_APPS = [
-    'apps.accounts'
+    'apps.accounts',
+    
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -110,6 +112,8 @@ USE_I18N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'accounts.User'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 if DEBUG:
     STATIC_URL = '/static/'

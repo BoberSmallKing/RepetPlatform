@@ -82,7 +82,6 @@ class LoginView(generics.GenericAPIView):
     
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    """Просмотр и обновление профиля"""
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 

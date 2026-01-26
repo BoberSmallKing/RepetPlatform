@@ -175,6 +175,6 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-FRONTEND_URL = "http://127.0.0.1:8000"
+FRONTEND_URL = "http://localhost:5173"
 
 DEFAULT_CHARSET = 'utf-8'

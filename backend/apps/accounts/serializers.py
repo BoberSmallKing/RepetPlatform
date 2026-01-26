@@ -62,12 +62,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        activation_path = reverse(
-            'activate',
-            kwargs={'uidb64': uid, 'token': token}
+        activation_url = (
+            f"{settings.FRONTEND_URL}/activate/{uid}/{token}"
         )
-
-        activation_url = f"{settings.FRONTEND_URL}{activation_path}"
 
         send_mail(
             subject="Activate account",
@@ -153,7 +150,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        """Показываем только профиль по роли"""
         data = super().to_representation(instance)
         if instance.role == User.Role.TUTOR:
             data['student_profile'] = None

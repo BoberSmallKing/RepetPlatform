@@ -200,30 +200,66 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     
 
-class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField()
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """
+    Запрос на сброс пароля (отправка email)
+    """
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                "User with this email does not exist."
+            )
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                "Account is not activated."
+            )
+
+        self.context['user'] = user
+        return value
+
+    def save(self):
+        user = self.context['user']
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        reset_url = (
+            f"{settings.FRONTEND_URL}/password-reset-confirm/{uid}/{token}"
+        )
+
+        send_mail(
+            subject="Password reset",
+            message=(
+                f"Hello, {user.first_name}!\n\n"
+                f"To reset your password, follow the link:\n{reset_url}"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """
+    Подтверждение нового пароля
+    """
     new_password = serializers.CharField(
         validators=[validate_password]
     )
     new_password_confirm = serializers.CharField()
 
-    def validate_old_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError(
-                'Old password is incorrect.'
-            )
-        return value
-
     def validate(self, attrs):
         if attrs['new_password'] != attrs['new_password_confirm']:
             raise serializers.ValidationError(
-                {'new_password': 'Passwords do not match.'}
+                {"new_password": "Passwords do not match."}
             )
         return attrs
 
-    def save(self):
-        user = self.context['request'].user
+    def save(self, user):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user

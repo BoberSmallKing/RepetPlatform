@@ -31,6 +31,18 @@ const authService = {
     return response.data;
   },
 
+  async resetPassword(email) {
+    return api.post("auth/password-reset/", { email });
+  },
+
+  async resetPasswordConfirm(uid, token, passwords) {
+    const response = await api.post(
+      `auth/password-reset-confirm/${uid}/${token}/`,
+      passwords
+    );
+    return response.data;
+  },
+
   async refreshToken() {
     const refresh = localStorage.getItem("refresh_token");
     if (!refresh) {

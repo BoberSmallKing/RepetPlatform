@@ -14,7 +14,8 @@ from .serializers import (
     UserLoginSerializer,
     UserProfileSerializer,
     UserUpdateSerializer,
-    ChangePasswordSerializer
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
 
 
@@ -94,23 +95,55 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return UserProfileSerializer
     
 
-class ChangePasswordView(generics.UpdateAPIView):
-    """Смена пароля"""
-    serializer_class = ChangePasswordSerializer
+class PasswordResetRequestView(generics.GenericAPIView):
+    """
+    Отправка email для сброса пароля
+    """
+    serializer_class = PasswordResetRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
-    
-    def update(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response({
-            'message': 'Password changed successfully'
-        }, status=status.HTTP_200_OK)
-    
+        return Response(
+            {'message': 'Password reset link sent to email.'},
+            status=status.HTTP_200_OK
+        )
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    """
+    Установка нового пароля
+    """
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, User.DoesNotExist):
+            return Response(
+                {'error': 'Invalid link.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {'error': 'Token is invalid or expired.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user)
+
+        return Response(
+            {'message': 'Password has been reset successfully.'},
+            status=status.HTTP_200_OK
+        )
+
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

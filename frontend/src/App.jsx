@@ -8,12 +8,15 @@ import Login from "./pages/auth/Login.jsx";
 import Logout from "./pages/auth/Logout.jsx";
 import ResetPassword from "./pages/auth/ResetPassword.jsx";
 import ResetPasswordActivate from "./pages/auth/ResetPasswordActivate.jsx";
+import Dashboard from "./pages/auth/Dashboard.jsx";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />

@@ -1,3 +1,5 @@
+import "../styles/components.css";
+
 function Input({
   label,
   name,
@@ -5,21 +7,25 @@ function Input({
   value,
   onChange,
   error,
+  children,
   ...props
 }) {
   return (
-    <div>
-      {label && <label>{label}</label>}
-
-      <input
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        {...props}
-      />
-
-      {error && <small style={{ color: "red" }}>{error}</small>}
+    <div className="input-wrapper">
+      {label && <label className="input-label">{label}</label>}
+      <div className="password-wrapper">
+        <input
+          name={name}
+          type={type}
+          value={value}
+          onChange={onChange}
+          className={`styled-input ${error ? "error" : ""}`}
+          style={{ width: "100%" }}
+          {...props}
+        />
+        {children}
+      </div>
+      {error && <small className="error-message">{error}</small>}
     </div>
   );
 }

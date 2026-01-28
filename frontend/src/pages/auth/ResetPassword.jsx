@@ -1,52 +1,96 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Input from "../../components/Input";
+import AuthStatusMessage from "../../components/AuthStatusMessage";
 import authService from "../../services/authService";
+import { validateField } from "../../utils/validators";
+import "../../styles/auth.css";
 
 function ResetPassword() {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleChange = (e) => {
-    setEmail(e.target.value);
+    const value = e.target.value;
+    setEmail(value);
+
+    const validationError = validateField("email", value);
+    setError(validationError);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError("");
-    setMessage("");
-
-    if (!email.trim()) {
-      setError("Введите email");
+    const finalError = validateField("email", email);
+    if (finalError) {
+      setError(finalError);
       return;
     }
 
     try {
       setLoading(true);
       await authService.resetPassword(email);
-      setMessage("Письмо для сброса пароля отправлено");
+      setIsSuccess(true);
     } catch (err) {
-      setError("Ошибка при отправке письма");
+      setError("Не удалось отправить письмо. Проверьте адрес.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Сброс пароля</h1>
+    <div className="auth-card">
+      {!isSuccess ? (
+        <>
+          <h1>Восстановление</h1>
+          <p
+            className="auth-subtitle"
+            style={{
+              textAlign: "center",
+              color: "var(--text-gray)",
+              marginBottom: "20px",
+            }}
+          >
+            Введите почту для получения ссылки на смену пароля.
+          </p>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <Input
+              label="Ваш Email"
+              name="email"
+              type="email"
+              placeholder="example@mail.com"
+              value={email}
+              onChange={handleChange}
+              error={error}
+            />
 
-      <Input label="Email" name="email" value={email} onChange={handleChange} />
+            <button
+              className="auth-button"
+              type="submit"
+              disabled={loading || !!error}
+            >
+              {loading ? "Отправка..." : "Сбросить пароль"}
+            </button>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Отправка..." : "Отправить письмо"}
-      </button>
-    </form>
+            <div className="auth-footer">
+              <Link to="/login" className="auth-link">
+                Вспомнили пароль? Войти
+              </Link>
+            </div>
+          </form>
+        </>
+      ) : (
+        <AuthStatusMessage
+          title="Проверьте почту"
+          message={`Инструкции по сбросу пароля отправлены на ${email}`}
+          buttonText="Вернуться ко входу"
+          linkTo="/login"
+        />
+      )}
+    </div>
   );
 }
 

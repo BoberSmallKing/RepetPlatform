@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Input from "../../components/Input";
+import EyeIcon from "../../components/EyeIcon";
+import AuthStatusMessage from "../../components/AuthStatusMessage";
 import authService from "../../services/authService";
+import { validateField } from "../../utils/validators";
+import "../../styles/auth.css";
 
 function ResetPasswordActivate() {
   const { uid, token } = useParams();
@@ -12,79 +16,119 @@ function ResetPasswordActivate() {
     new_password_confirm: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const error = validateField(name, value, { ...form, [name]: value });
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError("");
 
-    setError("");
-    setMessage("");
+    // Проверка перед отправкой
+    const newErrors = {};
+    Object.keys(form).forEach((field) => {
+      const error = validateField(field, form[field], form);
+      if (error) newErrors[field] = error;
+    });
 
-    if (form.new_password.length < 8) {
-      setError("Минимум 8 символов");
-      return;
-    }
-
-    if (form.new_password !== form.new_password_confirm) {
-      setError("Пароли не совпадают");
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
       setLoading(true);
-
       await authService.resetPasswordConfirm(uid, token, form);
-
-      setMessage("Пароль успешно изменён");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      setIsSuccess(true);
     } catch (err) {
-      setError("Ссылка недействительна или устарела");
+      setServerError(
+        "Ссылка недействительна или её срок истек. Попробуйте запросить восстановление снова."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Новый пароль</h1>
+    <div className="auth-card">
+      {isSuccess ? (
+        <AuthStatusMessage
+          icon="🛡️"
+          title="Пароль обновлен!"
+          message="Ваш новый пароль успешно сохранен. Теперь вы можете войти в систему, используя новые данные."
+          buttonText="Войти в аккаунт"
+          linkTo="/login"
+        />
+      ) : (
+        <>
+          <h1>Новый пароль</h1>
+          <p
+            className="auth-subtitle"
+            style={{
+              textAlign: "center",
+              color: "var(--text-gray)",
+              marginBottom: "20px",
+            }}
+          >
+            Придумайте надежный пароль (минимум 8 символов)
+          </p>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
+          <form onSubmit={handleSubmit}>
+            {serverError && (
+              <p
+                className="error-message"
+                style={{ textAlign: "center", marginBottom: "15px" }}
+              >
+                {serverError}
+              </p>
+            )}
 
-      <Input
-        label="Новый пароль"
-        type="password"
-        name="new_password"
-        value={form.new_password}
-        onChange={handleChange}
-      />
+            <Input
+              label="Новый пароль"
+              name="new_password"
+              type={showPass ? "text" : "password"}
+              placeholder="••••••••"
+              value={form.new_password}
+              onChange={handleChange}
+              error={errors.new_password}
+            >
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPass(!showPass)}
+                aria-label={showPass ? "Скрыть" : "Показать"}
+              >
+                <EyeIcon open={showPass} />
+              </button>
+            </Input>
 
-      <Input
-        label="Повторите пароль"
-        type="password"
-        name="new_password_confirm"
-        value={form.new_password_confirm}
-        onChange={handleChange}
-      />
+            <Input
+              label="Повторите пароль"
+              name="new_password_confirm"
+              type={showPass ? "text" : "password"}
+              placeholder="••••••••"
+              value={form.new_password_confirm}
+              onChange={handleChange}
+              error={errors.new_password_confirm}
+            />
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Сохранение..." : "Сменить пароль"}
-      </button>
-    </form>
+            <button className="auth-button" type="submit" disabled={loading}>
+              {loading ? "Сохранение..." : "Обновить пароль"}
+            </button>
+          </form>
+        </>
+      )}
+    </div>
   );
 }
 

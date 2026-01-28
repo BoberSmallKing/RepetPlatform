@@ -1,7 +1,9 @@
 import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
-
 import Register from "./pages/auth/Register.jsx";
 import Activate from "./pages/auth/Activate.jsx";
 import Login from "./pages/auth/Login.jsx";
@@ -12,21 +14,25 @@ import Dashboard from "./pages/auth/Dashboard.jsx";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />}></Route>
+        </Route>
 
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/logout" element={<Logout />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route
-        path="password-reset-confirm/:uid/:token"
-        element={<ResetPasswordActivate />}
-      />
-      <Route path="/activate/:uid/:token" element={<Activate />} />
-    </Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="password-reset-confirm/:uid/:token"
+          element={<ResetPasswordActivate />}
+        />
+        <Route path="/activate/:uid/:token" element={<Activate />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 

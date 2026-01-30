@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Input from "../../components/Input";
 import EyeIcon from "../../components/EyeIcon";
 import AuthStatusMessage from "../../components/AuthStatusMessage";
@@ -9,7 +9,6 @@ import "../../styles/auth.css";
 
 function ResetPasswordActivate() {
   const { uid, token } = useParams();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     new_password: "",

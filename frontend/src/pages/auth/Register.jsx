@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import authService from "../../services/authService";
 import { validateField } from "../../utils/validators";
 import Input from "../../components/Input";

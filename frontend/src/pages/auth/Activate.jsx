@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import api from "../../api/api";
 import AuthStatusMessage from "../../components/AuthStatusMessage";
 import "../../styles/auth.css";
 
 function Activate() {
   const { uid, token } = useParams();
-  const navigate = useNavigate();
 
   // Состояния: 'loading', 'success', 'error'
   const [status, setStatus] = useState("loading");

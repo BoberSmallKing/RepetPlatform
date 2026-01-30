@@ -1,0 +1,192 @@
+/* Убираем центрирование из index.css специально для страницы дашборда */
+.dashboard-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--soft-bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Sidebar: более узкий и строгий */
+.sidebar {
+  width: 280px;
+  background: var(--white);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  letter-spacing: -0.5px;
+  margin-bottom: 3rem;
+  padding-left: 0.5rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-nav a {
+  text-decoration: none;
+  color: var(--text-gray);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  transition: var(--transition);
+}
+
+.sidebar-nav a:hover {
+  background: var(--soft-bg);
+  color: var(--primary-blue);
+}
+
+.sidebar-nav a.active {
+  background: var(--light-blue);
+  color: var(--primary-blue);
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Header: Минимализм */
+.dashboard-header {
+  height: 80px;
+  min-height: 80px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* Profile Section */
+.profile-section {
+  position: relative;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px; /* Квадратный со скруглением выглядит серьезнее */
+  background: var(--primary-blue);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.avatar:hover {
+  transform: translateY(-2px);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  width: 240px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-info {
+  margin-bottom: 1rem;
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+}
+
+.profile-dropdown hr {
+  border: 0;
+  border-top: 1px solid var(--soft-bg);
+  margin: 0.8rem 0;
+}
+
+.profile-dropdown a,
+.logout-btn {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: var(--transition);
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-dropdown a:hover {
+  background: var(--soft-bg);
+  color: var(--primary-blue);
+}
+
+.logout-btn {
+  color: var(--error-red) !important;
+}
+
+.logout-btn:hover {
+  background: #fff5f5 !important;
+}
+
+/* Content Body */
+.content-body {
+  padding: 3rem;
+  max-width: 1200px;
+  width: 100%;
+}

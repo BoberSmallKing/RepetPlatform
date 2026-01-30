@@ -4,6 +4,7 @@ import authService from "../../services/authService";
 import { validateField } from "../../utils/validators";
 import Input from "../../components/Input";
 import EyeIcon from "../../components/EyeIcon";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 
 function Login() {
@@ -13,6 +14,7 @@ function Login() {
   });
 
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,9 @@ function Login() {
 
     try {
       setLoading(true);
-      await authService.login(form);
+      const response = await authService.login(form);
+      login(response.user || { loggedIn: true });
+
       navigate("/dashboard");
     } catch (err) {
       if (err.response && err.response.status === 401) {

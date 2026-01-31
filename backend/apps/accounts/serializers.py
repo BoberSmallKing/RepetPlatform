@@ -12,9 +12,6 @@ from django.utils.encoding import force_bytes
 from .models import User, TutorProfile, StudentProfile
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """
-    Регистрация пользователя с выбором роли.
-    """
     password = serializers.CharField(
         write_only=True,
         validators=[validate_password]
@@ -42,23 +39,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
 
-        # Создание пользователя
         user = User.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             role=validated_data['role'],
-            is_active=False
         )
 
-        # Создание профиля в зависимости от роли
-        if user.role == User.Role.TUTOR:
-            TutorProfile.objects.create(user=user)
-        elif user.role == User.Role.STUDENT:
-            StudentProfile.objects.create(user=user)
-
-        # Email-активация
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
@@ -82,9 +70,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
 
 class UserLoginSerializer(serializers.Serializer):
-    """
-    Вход по email и паролю.
-    """
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
@@ -110,7 +95,8 @@ class UserLoginSerializer(serializers.Serializer):
 class TutorProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TutorProfile
-        fields = ('education', 'experience_years', 'price_per_hour')
+        fields = ('education', 'experience_years', 'price_per_hour', 'invite_code')
+        read_only_fields = ('invite_code',)
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
@@ -159,7 +145,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    # Nested поля профиля
     tutor_profile = serializers.DictField(write_only=True, required=False)
     student_profile = serializers.DictField(write_only=True, required=False)
 
@@ -201,9 +186,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     
 
 class PasswordResetRequestSerializer(serializers.Serializer):
-    """
-    Запрос на сброс пароля (отправка email)
-    """
     email = serializers.EmailField()
 
     def validate_email(self, value):
@@ -244,9 +226,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         )
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    """
-    Подтверждение нового пароля
-    """
     new_password = serializers.CharField(
         validators=[validate_password]
     )

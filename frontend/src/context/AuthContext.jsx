@@ -1,8 +1,8 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
+import authService from "../services/authService";
+import AuthContext from "./AuthContextObject";
 
-const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -11,9 +11,12 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("access_token");
       if (token) {
         try {
-          setUser({ loggedIn: true });
-        } catch (err) {
+          const me = await authService.getMe();
+          setUser(me);
+        } catch {
           localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
+          setUser(null);
         }
       }
       setLoading(false);
@@ -34,4 +37,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export default AuthProvider;

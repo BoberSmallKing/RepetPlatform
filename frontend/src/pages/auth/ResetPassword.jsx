@@ -33,7 +33,7 @@ function ResetPassword() {
       setLoading(true);
       await authService.resetPassword(email);
       setIsSuccess(true);
-    } catch (err) {
+    } catch {
       setError("Не удалось отправить письмо. Проверьте адрес.");
     } finally {
       setLoading(false);

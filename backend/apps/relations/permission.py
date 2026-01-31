@@ -1,11 +1,10 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsTutor(BasePermission):
-    message = 'Only tutors can perform this action.'
-
+class RolePermission(BasePermission):
     def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.role == 'tutor'
-        )
+        if not request.user.is_authenticated:
+            return False
+
+        required_roles = getattr(view, "required_roles", None)
+        return request.user.role in required_roles

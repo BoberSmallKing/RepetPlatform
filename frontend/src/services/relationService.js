@@ -6,4 +6,5 @@ export const relationService = {
   create: (data) => api.post("/relation/tutor-students/", data),
   update: (id, data) => api.patch(`/relation/tutor-students/${id}/`, data),
   delete: (id) => api.delete(`/relation/tutor-students/${id}/`),
+  joinByInvite: (inviteCode) => api.post(`/relation/join/${inviteCode}/`),
 };

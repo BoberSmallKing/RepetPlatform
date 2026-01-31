@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import authService from "../../services/authService";
 import { validateField } from "../../utils/validators";
 import Input from "../../components/Input";
 import EyeIcon from "../../components/EyeIcon";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import "../../styles/auth.css";
 
 function Login() {
@@ -14,6 +14,7 @@ function Login() {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
@@ -46,9 +47,8 @@ function Login() {
     try {
       setLoading(true);
       const response = await authService.login(form);
-      login(response.user || { loggedIn: true });
-
-      navigate("/dashboard");
+      login(response);
+      navigate(location.state?.next || "/dashboard");
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setServerError("Неверный email или пароль");

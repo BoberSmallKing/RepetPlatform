@@ -49,7 +49,7 @@ function ResetPasswordActivate() {
       setLoading(true);
       await authService.resetPasswordConfirm(uid, token, form);
       setIsSuccess(true);
-    } catch (err) {
+    } catch {
       setServerError(
         "Ссылка недействительна или её срок истек. Попробуйте запросить восстановление снова."
       );

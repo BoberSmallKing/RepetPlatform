@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import AuthProvider from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import JoinTutorByInvite from "./pages/dashboard/JoinTutorByInvite.jsx";
 import DashboardLayout from "./pages/dashboard/DashboardLayout.jsx";
 import Relation from "./pages/dashboard/Relation.jsx";
 import Profile from "./pages/dashboard/Profile.jsx";
@@ -27,7 +28,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
-
+        <Route path="/join/:invite_code" element={<JoinTutorByInvite />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />

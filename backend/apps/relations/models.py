@@ -1,27 +1,24 @@
 from django.db import models
-from django.conf import settings
+from apps.accounts.models import TutorProfile, StudentProfile
 
-class TutorStudent(models.Model):
-    """
-    Связь репетитор ↔ ученик.
-    """
+
+class TutorStudentRelation(models.Model):
     tutor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        TutorProfile,
         on_delete=models.CASCADE,
         related_name='students'
     )
     student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        StudentProfile,
         on_delete=models.CASCADE,
         related_name='tutors'
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'tutor_students'
-        verbose_name = 'Tutor-Student relation'
-        verbose_name_plural = 'Tutor-Student relations'
         unique_together = ('tutor', 'student')
+        db_table = 'tutor_student_relations'
 
     def __str__(self):
-        return f"{self.student.full_name} → {self.tutor.full_name}"
+        return f"{self.student.user.email} -> {self.tutor.user.email}"

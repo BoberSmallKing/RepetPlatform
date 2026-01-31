@@ -3,9 +3,12 @@ import { useParams } from "react-router-dom";
 import api from "../../api/api";
 import AuthStatusMessage from "../../components/AuthStatusMessage";
 import "../../styles/auth.css";
+import { useAuth } from "../../hooks/useAuth";
+import authService from "../../services/authService";
 
 function Activate() {
   const { uid, token } = useParams();
+  const { login } = useAuth();
 
   // Состояния: 'loading', 'success', 'error'
   const [status, setStatus] = useState("loading");
@@ -13,15 +16,20 @@ function Activate() {
   useEffect(() => {
     const activateAccount = async () => {
       try {
-        // Имитируем небольшую задержку, чтобы пользователь не видел "прыгающий" интерфейс
         const response = await api.get(`auth/activate/${uid}/${token}/`);
 
         const { access, refresh } = response.data;
         localStorage.setItem("access_token", access);
         localStorage.setItem("refresh_token", refresh);
 
+        try {
+          const me = await authService.getMe();
+          login(me);
+        } catch {
+        }
+
         setStatus("success");
-      } catch (err) {
+      } catch {
         setStatus("error");
       }
     };

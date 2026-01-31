@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import "../../styles/dashboard.css";
 
 function DashboardLayout() {

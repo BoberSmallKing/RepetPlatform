@@ -33,7 +33,6 @@ function ResetPasswordActivate() {
     e.preventDefault();
     setServerError("");
 
-    // Проверка перед отправкой
     const newErrors = {};
     Object.keys(form).forEach((field) => {
       const error = validateField(field, form[field], form);

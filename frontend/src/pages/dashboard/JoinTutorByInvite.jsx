@@ -6,7 +6,7 @@ import AuthStatusMessage from "../../components/AuthStatusMessage";
 function JoinTutorByInvite() {
   const { invite_code } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState("loading"); // loading, success, error
+  const [status, setStatus] = useState("loading");
 
   useEffect(() => {
     const performJoin = async () => {

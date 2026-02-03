@@ -10,7 +10,6 @@ function Activate() {
   const { uid, token } = useParams();
   const { login } = useAuth();
 
-  // Состояния: 'loading', 'success', 'error'
   const [status, setStatus] = useState("loading");
 
   useEffect(() => {
@@ -25,8 +24,7 @@ function Activate() {
         try {
           const me = await authService.getMe();
           login(me);
-        } catch {
-        }
+        } catch {}
 
         setStatus("success");
       } catch {
@@ -42,7 +40,6 @@ function Activate() {
       {status === "loading" && (
         <div style={{ textAlign: "center", padding: "20px" }}>
           <div className="loader"></div>{" "}
-          {/* Можно добавить простой CSS лоадер */}
           <h2 style={{ marginTop: "20px" }}>Активация...</h2>
           <p style={{ color: "var(--text-gray)" }}>
             Пожалуйста, подождите, мы подтверждаем ваш email.

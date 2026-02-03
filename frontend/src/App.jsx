@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AuthProvider from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import RelationDetails from "./pages/dashboard/RelationDetails.jsx";
 import JoinTutorByInvite from "./pages/dashboard/JoinTutorByInvite.jsx";
 import DashboardLayout from "./pages/dashboard/DashboardLayout.jsx";
 import Relation from "./pages/dashboard/Relation.jsx";
@@ -25,6 +26,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Relation />} />
+            <Route path="relation/:id" element={<RelationDetails />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Route>

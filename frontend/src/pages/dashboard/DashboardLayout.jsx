@@ -96,7 +96,7 @@ function DashboardLayout() {
                   Настройки аккаунта
                 </NavLink>
                 <button onClick={logout} className="logout-btn">
-                  Выйти из системы
+                  Выйти
                 </button>
               </div>
             )}

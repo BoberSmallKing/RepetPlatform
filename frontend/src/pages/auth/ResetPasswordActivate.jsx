@@ -120,7 +120,7 @@ function ResetPasswordActivate() {
               error={errors.new_password_confirm}
             />
 
-            <button className="auth-button" type="submit" disabled={loading}>
+            <button className="main-button" type="submit" disabled={loading}>
               {loading ? "Сохранение..." : "Обновить пароль"}
             </button>
           </form>

@@ -68,7 +68,7 @@ function ResetPassword() {
             />
 
             <button
-              className="auth-button"
+              className="main-button"
               type="submit"
               disabled={loading || !!error}
             >

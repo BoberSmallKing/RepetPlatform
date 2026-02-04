@@ -20,7 +20,6 @@
   }
 }
 
-/* Переключатель ролей */
 .role-selector {
   display: flex;
   background: var(--light-blue);
@@ -61,31 +60,6 @@
   transform: translateX(100%);
 }
 
-/* Кнопки */
-.auth-button {
-  width: 100%;
-  padding: 14px;
-  background-color: var(--primary-blue);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  margin-top: 10px;
-}
-
-.auth-button:hover:not(:disabled) {
-  background-color: #357abd;
-  transform: translateY(-1px);
-}
-
-.auth-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .auth-footer {
   margin-top: 20px;
   text-align: center;
@@ -106,10 +80,9 @@
 
 .input-row > div {
   flex: 1;
-  min-width: 0; /* Важно для предотвращения переполнения в flex-контейнере */
+  min-width: 0;
 }
 
-/* Стили для пароля с глазком */
 .password-wrapper {
   position: relative;
   display: flex;
@@ -134,7 +107,6 @@
   color: var(--primary-blue);
 }
 
-/* Лоадер в стиле нашей платформы */
 .loader {
   width: 48px;
   height: 48px;

@@ -162,7 +162,7 @@ function Register() {
               error={errors.password_confirm}
             />
 
-            <button className="auth-button" type="submit" disabled={loading}>
+            <button className="main-button" type="submit" disabled={loading}>
               {loading ? "Создание профиля..." : "Зарегистрироваться"}
             </button>
           </form>

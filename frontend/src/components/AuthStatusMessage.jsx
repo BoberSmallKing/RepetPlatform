@@ -26,7 +26,7 @@ function AuthStatusMessage({
       </p>
       <Link
         to={linkTo}
-        className="auth-button"
+        className="main-button"
         style={{ display: "block", textDecoration: "none" }}
       >
         {buttonText}

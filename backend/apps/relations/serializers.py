@@ -10,7 +10,7 @@ class TutorStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TutorStudentRelation
-        fields = ('id', 'student_id', 'student', 'is_active', 'tutor', 'target', 'type_class', 'created_at')
+        fields = ('id', 'student_id', 'student', 'is_active', 'tutor', 'target', 'lesson_type', 'created_at')
         read_only_fields = ('id', 'student', 'is_active', 'tutor', 'created_at')
 
     def get_student(self, obj):
@@ -43,8 +43,7 @@ class TutorStudentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
-        if hasattr(instance, 'update_active_status'):
-            instance.update_active_status()
+        instance.update_active_status()
         return instance
 
 class JoinByInviteSerializer(serializers.Serializer):

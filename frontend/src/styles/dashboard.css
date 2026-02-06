@@ -275,11 +275,11 @@
 }
 
 .status-text.completed {
-  color: #2d6a4f;
+  color: var(--confirm-green);
 }
 
 .status-text.pending {
-  color: #7b241c;
+  color: var(--error-reds);
 }
 
 .check-icon {
@@ -287,7 +287,7 @@
 }
 
 .fill-link-btn {
-  background: #7b241c;
+  background: var(--error-red);
   color: white;
   border: none;
   padding: 6px 14px;

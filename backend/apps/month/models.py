@@ -29,7 +29,7 @@ class Month(models.Model):
     title = models.CharField(max_length=100, blank=True)
     month_target = models.CharField(max_length=200, blank=True)
 
-    image = models.ImageField(upload_to="months/", default="months/default.jpg", blank=True, null=True)
+    image = models.ImageField(upload_to="months/", default="months/default.jpg")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
